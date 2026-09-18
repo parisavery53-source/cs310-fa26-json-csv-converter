@@ -2,6 +2,8 @@ package edu.jsu.mcis.cs310;
 
 import com.github.cliftonlabs.json_simple.*;
 import com.opencsv.*;
+import java.io.*;
+import java.util.*;
 
 public class Converter {
     
@@ -78,7 +80,41 @@ public class Converter {
         
         try {
         
-            // INSERT YOUR CODE HERE
+          CSVReader reader = new CSVReader(new StringReader(csvString));
+                List<String[]> rows = reader.readAll();
+
+    String[] headings = rows.get(0);
+
+    JsonArray prodNums = new JsonArray();
+    JsonArray colHeadings = new JsonArray();
+    JsonArray data = new JsonArray();
+
+    for (String heading : headings) {
+    colHeadings.add(heading);
+}
+
+    for (int i = 1; i < rows.size(); i++) {
+    String[] row = rows.get(i);
+
+    prodNums.add(row[0]);
+
+    JsonArray record = new JsonArray();
+    record.add(row[1]);
+    record.add(Integer.parseInt(row[2]));
+    record.add(Integer.parseInt(row[3]));
+    record.add(row[4]);
+    record.add(row[5]);
+    record.add(row[6]);
+
+    data.add(record);
+}
+
+    JsonObject output = new JsonObject();
+    output.put("ProdNums", prodNums);
+    output.put("ColHeadings", colHeadings);
+    output.put("Data", data);
+
+result = Jsoner.serialize(output);
             
         }
         catch (Exception e) {
@@ -96,7 +132,44 @@ public class Converter {
         
         try {
             
-            // INSERT YOUR CODE HERE
+            JsonObject input = Jsoner.deserialize(jsonString, new JsonObject());
+
+    JsonArray prodNums = (JsonArray) input.get("ProdNums");
+    JsonArray colHeadings = (JsonArray) input.get("ColHeadings");
+    JsonArray data = (JsonArray) input.get("Data");
+
+    List<String[]> rows = new ArrayList<>();
+
+    String[] headings = new String[colHeadings.size()];
+
+    for (int i = 0; i < colHeadings.size(); i++) {
+    headings[i] = (String) colHeadings.get(i);
+}
+
+    rows.add(headings);
+
+    for (int i = 0; i < data.size(); i++) {
+    JsonArray record = (JsonArray) data.get(i);
+
+    String[] row = new String[7];
+
+    row[0] = (String) prodNums.get(i);
+    row[1] = (String) record.get(0);
+    row[2] = String.valueOf(((Number) record.get(1)).intValue());
+    row[3] = String.format("%02d", ((Number) record.get(2)).intValue());
+    row[4] = (String) record.get(3);
+    row[5] = (String) record.get(4);
+    row[6] = (String) record.get(5);
+
+    rows.add(row);
+}
+
+    StringWriter writer = new StringWriter();
+    CSVWriter csvWriter = new CSVWriter(writer);
+    csvWriter.writeAll(rows, true);
+    csvWriter.close();
+
+    result = writer.toString();
             
         }
         catch (Exception e) {
@@ -108,3 +181,5 @@ public class Converter {
     }
     
 }
+
+
